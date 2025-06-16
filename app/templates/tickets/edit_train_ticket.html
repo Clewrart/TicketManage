@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4>编辑火车票 - {{ ticket.train_number }}</h4>
+    </div>
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="train_number" class="form-label">车次</label>
+                        <input type="text" class="form-control" id="train_number" name="train_number" 
+                               value="{{ ticket.train_number }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="departure_station" class="form-label">出发站</label>
+                        <input type="text" class="form-control" id="departure_station" name="departure_station" 
+                               value="{{ ticket.departure_station }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="arrival_station" class="form-label">到达站</label>
+                        <input type="text" class="form-control" id="arrival_station" name="arrival_station" 
+                               value="{{ ticket.arrival_station }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="departure_date" class="form-label">出发日期</label>
+                        <input type="date" class="form-control" id="departure_date" name="departure_date" 
+                               value="{{ ticket.departure_date }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="departure_time" class="form-label">出发时间</label>
+                        <input type="time" class="form-control" id="departure_time" name="departure_time" 
+                               value="{{ ticket.departure_time.strftime('%H:%M') }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="go_deltatime" class="form-label">出发延误时间(分钟)</label>
+                        <input type="number" class="form-control" id="go_deltatime" name="go_deltatime" 
+                               value="{{ ticket.go_deltatime or 0 }}">
+                    </div>
+                       <div class="mb-3">
+                        <label for="arrival_date" class="form-label">到达日期</label>
+                        <input type="date" class="form-control" id="arrival_date" name="arrival_date" 
+                               value="{{ ticket.arrival_date }}" required>
+                    </div>
+                    <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="arrival_time" class="form-label">到达时间</label>
+                        <input type="time" class="form-control" id="arrival_time" name="arrival_time" 
+                               value="{{ ticket.arrival_time.strftime('%H:%M') }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="arrive_deltatime" class="form-label">到达延误时间(分钟)</label>
+                        <input type="number" class="form-control" id="arrive_deltatime" name="arrive_deltatime" 
+                               value="{{ ticket.arrive_deltatime or 0 }}">
+                    </div>
+                </div>
+                
+                    <div class="mb-3">
+                        <label for="ticket_class" class="form-label">席别</label>
+                        <select class="form-select" id="ticket_class" name="ticket_class" required>
+                            <option value="business" {% if ticket.ticket_class == 'business' %}selected{% endif %}>商务座</option>
+                            <option value="first" {% if ticket.ticket_class == 'first' %}selected{% endif %}>一等座</option>
+                            <option value="second" {% if ticket.ticket_class == 'second' %}selected{% endif %}>二等座</option>
+                            <option value="hard" {% if ticket.ticket_class == 'hard' %}selected{% endif %}>硬座</option>
+                            <option value="soft" {% if ticket.ticket_class == 'soft' %}selected{% endif %}>软座</option>
+                            <option value="hard_sleeper" {% if ticket.ticket_class == 'hard_sleeper' %}selected{% endif %}>硬卧</option>
+                            <option value="soft_sleeper" {% if ticket.ticket_class == 'soft_sleeper' %}selected{% endif %}>软卧</option>
+                            <option value="none" {% if ticket.ticket_class == 'none' %}selected{% endif %}>无座</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="seat_number" class="form-label">座位号</label>
+                        <input type="text" class="form-control" id="seat_number" name="seat_number" 
+                               value="{{ ticket.seat_number or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="price" class="form-label">票价</label>
+                        <input type="number" step="0.01" class="form-control" id="price" name="price" 
+                               value="{{ ticket.price }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="distance" class="form-label">里程(公里)</label>
+                        <input type="number" step="0.001" class="form-control" id="distance" name="distance" 
+                               value="{{ ticket.distance or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="railwaycom" class="form-label">铁路局</label>
+                        <input type="text" class="form-control" id="railwaycom" name="railwaycom" 
+                               value="{{ ticket.railwaycom or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="train_model" class="form-label">车型</label>
+                        <input type="text" class="form-control" id="train_model" name="train_model" 
+                               value="{{ ticket.train_model or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="train_code" class="form-label">车号</label>
+                        <input type="text" class="form-control" id="train_code" name="train_code" 
+                               value="{{ ticket.train_code or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="ticket_photo" class="form-label">车票照片</label>
+                        <input type="file" class="form-control" id="ticket_photo" name="ticket_photo" accept="image/*">
+                        {% if ticket.ticket_photo %}
+                        <div class="mt-2">
+                            <small class="text-muted">当前照片:</small>
+                            <img src="data:image/jpeg;base64,{{ ticket.ticket_photo }}" class="img-thumbnail" style="max-height: 100px;">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">保存</button>
+                <a href="{{ url_for('view_train_ticket', id=ticket.TrainRecordID) }}" class="btn btn-secondary">取消</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

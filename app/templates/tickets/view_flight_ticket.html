@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4>飞机票详情 - {{ ticket.flight_number }}</h4>
+        <div>
+            <a href="{{ url_for('edit_flight_ticket', id=ticket.flightRecordID) }}" class="btn btn-warning btn-sm">编辑</a>
+            <form action="{{ url_for('delete_flight_ticket', id=ticket.flightRecordID) }}" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('确定删除此记录吗？')">删除</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        <div class="row">
+            <!-- 基本信息 -->
+            <div class="col-md-6">
+                <h5>基本信息</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="35%">航班号</th>
+                        <td>{{ ticket.flight_number }}</td>
+                    </tr>
+                    <tr>
+                        <th>舱位等级</th>
+                        <td>{{ ticket.cabin_class or '未填写' }}</td>
+                    </tr>
+                    <tr>
+                        <th>座位号</th>
+                        <td>{{ ticket.seat_number or '未分配' }}</td>
+                    </tr>
+                    <tr>
+                        <th>支付票价</th>
+                        <td>{{ '¥%.2f'|format(ticket.price) if ticket.price else '未填写' }}</td>
+                    </tr>
+                    <tr>
+                        <th>航空公司</th>
+                        <td>{{ ticket.airline or '未填写' }}</td>
+                    </tr>
+                    <tr>
+                        <th>航司二字码</th>
+                        <td>{{ ticket.airline_code or '未填写' }}</td>
+                    </tr>
+                    <tr>
+                        <th>里程数</th>
+                        <td>{{ '%.3f公里'|format(ticket.distance) if ticket.distance else '未填写' }}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <!-- 机场信息 -->
+            <div class="col-md-6">
+                <h5>机场信息</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="35%">始发机场</th>
+                        <td>{{ ticket.departure_airport or '未填写' }} ({{ ticket.departure_airport_code or '无' }})</td>
+                    </tr>
+                    <tr>
+                        <th>始发航站楼</th>
+                        <td>{{ ticket.departure_terminal or '未填写' }}</td>
+                    </tr>
+                    <tr>
+                        <th>登机口</th>
+                        <td>{{ ticket.boarding_gate or '未填写' }}</td>
+                    </tr>
+                    <tr>
+                        <th>到达机场</th>
+                        <td>{{ ticket.arrival_airport or '未填写' }} ({{ ticket.arrival_airport_code or '无' }})</td>
+                    </tr>
+                    <tr>
+                        <th>计划起飞时间</th>
+                        <td>
+                            {% if ticket.scheduled_departure_date and ticket.scheduled_departure_time %}
+                                {{ ticket.scheduled_departure_date }} {{ ticket.scheduled_departure_time.strftime('%H:%M') }}
+                            {% else %}
+                                未填写
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>计划到达时间</th>
+                        <td>
+                            {% if ticket.scheduled_arrival_date and ticket.scheduled_arrival_time %}
+                                {{ ticket.scheduled_arrival_date }} {{ ticket.scheduled_arrival_time.strftime('%H:%M') }}
+                            {% else %}
+                                未填写
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 航班详情 -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h5>航班详情</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="35%">起飞正晚点</th>
+                        <td>{{ ticket.departure_delay or '正常' }}</td>
+                    </tr>
+                    <tr>
+                        <th>到达正晚点</th>
+                        <td>{{ ticket.arrival_delay or '正常' }}</td>
+                    </tr>
+                    <tr>
+                        <th>机型</th>
+                        <td>{{ ticket.aircraft_type or '未填写' }}</td>
+                    </tr>
+                    <tr>
+                        <th>注册号</th>
+                        <td>{{ ticket.registration_number or '未填写' }}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="col-md-6">
+                <h5>其他信息</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="35%">行李托运</th>
+                        <td>{{ ticket.has_baggage_check or '未填写' }}</td>
+                    </tr>
+                    <tr>
+                        <th>起飞跑道</th>
+                        <td>{{ ticket.departure_runway or '未填写' }}</td>
+                    </tr>
+                    <tr>
+                        <th>降落跑道</th>
+                        <td>{{ ticket.arrival_runway or '未填写' }}</td>
+                    </tr>
+                    <tr>
+                        <th>ETKT票号</th>
+                        <td>{{ ticket.etkt_number or '未填写' }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 备注和图片 -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h5>备注</h5>
+                <div class="card">
+                    <div class="card-body">
+                        {{ ticket.remarks or '无备注信息' }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <h5>票据图片</h5>
+                {% if ticket.ticket_image %}
+                <img src="data:image/jpeg;base64,{{ ticket.ticket_image }}" class="img-fluid rounded" style="max-height: 200px;">
+                {% else %}
+                <div class="alert alert-info">无票据图片</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <a href="{{ url_for('flight_tickets') }}" class="btn btn-secondary">返回列表</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4>添加火车票</h4>
+    </div>
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="train_number" class="form-label">车次</label>
+                        <input type="text" class="form-control" id="train_number" name="train_number" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="departure_station" class="form-label">出发站</label>
+                        <input type="text" class="form-control" id="departure_station" name="departure_station" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="arrival_station" class="form-label">到达站</label>
+                        <input type="text" class="form-control" id="arrival_station" name="arrival_station" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="departure_date" class="form-label">出发日期</label>
+                        <input type="date" class="form-control" id="departure_date" name="departure_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="departure_time" class="form-label">出发时间</label>
+                        <input type="time" class="form-control" id="departure_time" name="departure_time" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="go_deltatime" class="form-label">出发正晚点(分钟)</label>
+                        <input type="number" class="form-control" id="arrive_deltatime" name="arrive_deltatime" value="0">
+                    </div>
+ <div class="mb-3">
+                        <label for="arrival_date" class="form-label">到达日期</label>
+                        <input type="date" class="form-control" id="arrival_date" name="arrival_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="arrival_time" class="form-label">到达时间</label>
+                        <input type="time" class="form-control" id="arrival_time" name="arrival_time" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="arrive_deltatime" class="form-label">到达正晚点(分钟)</label>
+                        <input type="number" class="form-control" id="arrive_deltatime" name="arrive_deltatime" value="0">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="ticket_class" class="form-label">席别</label>
+                        <select class="form-select" id="ticket_class" name="ticket_class" required>
+                            <option value="business">商务座</option>
+                            <option value="first">一等座</option>
+                            <option value="second" selected>二等座</option>
+                            <option value="hard">硬座</option>
+                            <option value="soft">软座</option>
+                            <option value="hard_sleeper">硬卧</option>
+                            <option value="soft_sleeper">软卧</option>
+                            <option value="none">无座</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="seat_number" class="form-label">座位号</label>
+                        <input type="text" class="form-control" id="seat_number" name="seat_number">
+                    </div>
+                    <div class="mb-3">
+                        <label for="price" class="form-label">票价</label>
+                        <input type="number" step="0.01" class="form-control" id="price" name="price" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="distance" class="form-label">里程(公里)</label>
+                        <input type="number" step="0.001" class="form-control" id="distance" name="distance">
+                    </div>
+                    <!-- 新增字段 -->
+                    <div class="mb-3">
+                        <label for="railwaycom" class="form-label">铁路局</label>
+                        <input type="text" class="form-control" id="railwaycom" name="railwaycom">
+                    </div>
+                    <div class="mb-3">
+                        <label for="train_model" class="form-label">车型</label>
+                        <input type="text" class="form-control" id="train_model" name="train_model">
+                    </div>
+                    <div class="mb-3">
+                        <label for="train_code" class="form-label">车号</label>
+                        <input type="text" class="form-control" id="train_code" name="train_code">
+                    </div>
+                    <div class="mb-3">
+                        <label for="ticket_photo" class="form-label">车票照片<500kB</label>
+                        <input type="file" class="form-control" id="ticket_photo" name="ticket_photo" accept="image/*">
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">保存</button>
+                <a href="{{ url_for('train_tickets') }}" class="btn btn-secondary">取消</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

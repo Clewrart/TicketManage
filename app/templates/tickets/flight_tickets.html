@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+    <h2>我的飞机票</h2>
+    <a href="{{ url_for('add_flight_ticket') }}" class="btn btn-primary">添加飞机票</a>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>航班号</th>
+            <th>航空公司</th>
+            <th>出发机场</th>
+            <th>到达机场</th>
+            <th>起飞时间</th>
+            <th>票价</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ticket in tickets %}
+        <tr>
+            <td>{{ ticket.flight_number }}</td>
+            <td>{{ ticket.airline }} ({{ ticket.airline_code }})</td>
+            <td>{{ ticket.departure_airport }} ({{ ticket.departure_airport_code }})</td>
+            <td>{{ ticket.arrival_airport }} ({{ ticket.arrival_airport_code }})</td>
+            <td>{{ ticket.scheduled_departure_date }} {{ ticket.scheduled_departure_time }}</td>
+            <td>¥{{ ticket.price }}</td>
+            <td>
+                <a href="{{ url_for('view_flight_ticket', id=ticket.flightRecordID) }}" class="btn btn-sm btn-info">查看</a>
+                <a href="{{ url_for('edit_flight_ticket', id=ticket.flightRecordID) }}" class="btn btn-sm btn-warning">编辑</a>
+                <form action="{{ url_for('delete_flight_ticket', id=ticket.flightRecordID) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定删除吗？')">删除</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

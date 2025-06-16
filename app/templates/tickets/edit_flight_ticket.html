@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4>编辑飞机票 - {{ ticket.flight_number }}</h4>
+    </div>
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row">
+                <!-- 第一列 -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="flight_number" class="form-label">航班号</label>
+                        <input type="text" class="form-control" id="flight_number" name="flight_number" 
+                               value="{{ ticket.flight_number }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="cabin_class" class="form-label">舱位等级</label>
+                        <input type="text" class="form-control" id="cabin_class" name="cabin_class" 
+                               value="{{ ticket.cabin_class or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="seat_number" class="form-label">座位号</label>
+                        <input type="text" class="form-control" id="seat_number" name="seat_number" 
+                               value="{{ ticket.seat_number or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="price" class="form-label">支付票价</label>
+                        <input type="number" step="0.01" class="form-control" id="price" name="price" 
+                               value="{{ ticket.price or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="airline" class="form-label">航空公司</label>
+                        <input type="text" class="form-control" id="airline" name="airline" 
+                               value="{{ ticket.airline or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="airline_code" class="form-label">航司二字码</label>
+                        <input type="text" class="form-control" id="airline_code" name="airline_code" maxlength="10"
+                               value="{{ ticket.airline_code or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="departure_airport" class="form-label">始发机场</label>
+                        <input type="text" class="form-control" id="departure_airport" name="departure_airport" 
+                               value="{{ ticket.departure_airport or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="departure_airport_code" class="form-label">始发机场三字码</label>
+                        <input type="text" class="form-control" id="departure_airport_code" name="departure_airport_code" maxlength="3"
+                               value="{{ ticket.departure_airport_code or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="departure_terminal" class="form-label">始发航站楼</label>
+                        <input type="text" class="form-control" id="departure_terminal" name="departure_terminal" 
+                               value="{{ ticket.departure_terminal or '' }}">
+                    </div>
+                </div>
+                
+                <!-- 第二列 -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="boarding_gate" class="form-label">登机口</label>
+                        <input type="text" class="form-control" id="boarding_gate" name="boarding_gate" 
+                               value="{{ ticket.boarding_gate or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="distance" class="form-label">里程数(公里)</label>
+                        <input type="number" step="0.001" class="form-control" id="distance" name="distance" 
+                               value="{{ ticket.distance or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="arrival_airport" class="form-label">到达机场</label>
+                        <input type="text" class="form-control" id="arrival_airport" name="arrival_airport" 
+                               value="{{ ticket.arrival_airport or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="arrival_airport_code" class="form-label">到达机场三字码</label>
+                        <input type="text" class="form-control" id="arrival_airport_code" name="arrival_airport_code" maxlength="10"
+                               value="{{ ticket.arrival_airport_code or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="scheduled_departure_date" class="form-label">计划起飞日期</label>
+                        <input type="date" class="form-control" id="scheduled_departure_date" name="scheduled_departure_date" 
+                               value="{{ ticket.scheduled_departure_date or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="scheduled_departure_time" class="form-label">计划起飞时间</label>
+                        <input type="time" class="form-control" id="scheduled_departure_time" name="scheduled_departure_time" 
+                               value="{{ ticket.scheduled_departure_time.strftime('%H:%M') if ticket.scheduled_departure_time else '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="scheduled_arrival_date" class="form-label">计划到达日期</label>
+                        <input type="date" class="form-control" id="scheduled_arrival_date" name="scheduled_arrival_date" 
+                               value="{{ ticket.scheduled_arrival_date or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="scheduled_arrival_time" class="form-label">计划到达时间</label>
+                        <input type="time" class="form-control" id="scheduled_arrival_time" name="scheduled_arrival_time" 
+                               value="{{ ticket.scheduled_arrival_time.strftime('%H:%M') if ticket.scheduled_arrival_time else '' }}">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 第三行 -->
+            <div class="row mt-2">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="departure_delay" class="form-label">起飞正晚点情况</label>
+                        <input type="text" class="form-control" id="departure_delay" name="departure_delay" 
+                               value="{{ ticket.departure_delay or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="arrival_delay" class="form-label">到达正晚点情况</label>
+                        <input type="text" class="form-control" id="arrival_delay" name="arrival_delay" 
+                               value="{{ ticket.arrival_delay or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="aircraft_type" class="form-label">机型</label>
+                        <input type="text" class="form-control" id="aircraft_type" name="aircraft_type" 
+                               value="{{ ticket.aircraft_type or '' }}">
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="registration_number" class="form-label">注册号</label>
+                        <input type="text" class="form-control" id="registration_number" name="registration_number" 
+                               value="{{ ticket.registration_number or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="has_baggage_check" class="form-label">行李托运状况</label>
+                        <input type="text" class="form-control" id="has_baggage_check" name="has_baggage_check" 
+                               value="{{ ticket.has_baggage_check or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="departure_runway" class="form-label">起飞跑道</label>
+                        <input type="text" class="form-control" id="departure_runway" name="departure_runway" 
+                               value="{{ ticket.departure_runway or '' }}">
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="arrival_runway" class="form-label">降落跑道</label>
+                        <input type="text" class="form-control" id="arrival_runway" name="arrival_runway" 
+                               value="{{ ticket.arrival_runway or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="etkt_number" class="form-label">ETKT票号</label>
+                        <input type="text" class="form-control" id="etkt_number" name="etkt_number" 
+                               value="{{ ticket.etkt_number or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="remarks" class="form-label">其他事项记录</label>
+                        <textarea class="form-control" id="remarks" name="remarks" rows="3">{{ ticket.remarks or '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 图片上传 -->
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label for="ticket_image" class="form-label">票据图片</label>
+                        <input type="file" class="form-control" id="ticket_image" name="ticket_image" accept="image/*">
+                        {% if ticket.ticket_image %}
+                        <div class="mt-2">
+                            <small class="text-muted">当前图片:</small>
+                            <img src="data:image/jpeg;base64,{{ ticket.ticket_image }}" class="img-thumbnail" style="max-height: 150px;">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">保存更改</button>
+                <a href="{{ url_for('view_flight_ticket', id=ticket.flightRecordID) }}" class="btn btn-secondary">取消</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
