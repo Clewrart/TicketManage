@@ -413,17 +413,35 @@ def add_metrocard_ticket():
 
     if request.method == 'POST':
         try:
+            # 初始化 Base64 图片数据为 None
+            front_image_base64 = None
+            back_image_base64 = None
+
+            # 处理正面图片上传
+            if 'front_image' in request.files:
+                front_image = request.files['front_image']
+                if front_image.filename != '':
+                    front_image_base64 = base64.b64encode(front_image.read()).decode('utf-8')
+
+            # 处理背面图片上传
+            if 'back_image' in request.files:
+                back_image = request.files['back_image']
+                if back_image.filename != '':
+                    back_image_base64 = base64.b64encode(back_image.read()).decode('utf-8')
+
+            # 创建票卡记录
             card = MetroCard(
                 user_id=session['user_id'],
                 city=request.form['city'],
                 card_type=request.form['card_type'],
                 acquire_date=datetime.strptime(request.form['acquire_date'], '%Y-%m-%d').date(),
                 acquire_method=request.form['acquire_method'],
-                card_number=request.form['card_number'],
-                edition=request.form['edition'],
-                front_image=request.form['front_image'],
-                back_image=request.form['back_image']
+                card_number=request.form.get('card_number', ''),  # 使用 get 避免 KeyError
+                edition=request.form.get('edition', ''),
+                front_image=front_image_base64,  # 存储 Base64 字符串
+                back_image=back_image_base64     # 存储 Base64 字符串
             )
+
             db.session.add(card)
             db.session.commit()
             flash('票卡添加成功', 'success')
@@ -456,14 +474,26 @@ def edit_metrocard_ticket(id):
 
     if request.method == 'POST':
         try:
+            # 更新普通字段
             card.city = request.form['city']
             card.card_type = request.form['card_type']
             card.acquire_date = datetime.strptime(request.form['acquire_date'], '%Y-%m-%d').date()
             card.acquire_method = request.form['acquire_method']
-            card.card_number = request.form['card_number']
-            card.edition = request.form['edition']
-            card.front_image = request.form['front_image']
-            card.back_image = request.form['back_image']
+            card.card_number = request.form.get('card_number', '')
+            card.edition = request.form.get('edition', '')
+
+            # 处理正面图片上传（如果用户上传了新图片）
+            if 'front_image' in request.files:
+                front_image = request.files['front_image']
+                if front_image.filename != '':  # 用户上传了新图片
+                    card.front_image = base64.b64encode(front_image.read()).decode('utf-8')
+
+            # 处理背面图片上传（如果用户上传了新图片）
+            if 'back_image' in request.files:
+                back_image = request.files['back_image']
+                if back_image.filename != '':  # 用户上传了新图片
+                    card.back_image = base64.b64encode(back_image.read()).decode('utf-8')
+
             db.session.commit()
             flash('票卡更新成功', 'success')
             return redirect(url_for('view_metrocard_ticket', id=id))
