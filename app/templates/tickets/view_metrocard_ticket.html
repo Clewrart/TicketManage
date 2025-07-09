@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4>轨交票卡详情 - {{ card.city }} {{ card.card_type }}</h4>
+        <div>
+            <a href="{{ url_for('edit_metrocard_ticket', id=card.id) }}" class="btn btn-warning btn-sm">编辑</a>
+            <form action="{{ url_for('delete_metrocard_ticket', id=card.id) }}" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('确定删除这张轨交票卡吗？')">删除</button>
+            </form>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="30%">城市</th>
+                        <td>{{ card.city }}</td>
+                    </tr>
+                    <tr>
+                        <th>票卡类型</th>
+                        <td>{{ card.card_type }}</td>
+                    </tr>
+                    <tr>
+                        <th>获取日期</th>
+                        <td>{{ card.acquire_date }}</td>
+                    </tr>
+                    <tr>
+                        <th>获取方式</th>
+                        <td>{{ card.acquire_method }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="30%">卡号</th>
+                        <td>{{ card.card_number or '无' }}</td>
+                    </tr>
+                    <tr>
+                        <th>版本</th>
+                        <td>{{ card.edition or '无' }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            {% if card.front_image %}
+            <div class="col-md-6">
+                <h5>正面照片</h5>
+                <img src="data:image/jpeg;base64,{{ card.front_image }}" class="img-fluid" style="max-height: 400px;">
+            </div>
+            {% endif %}
+            
+            {% if card.back_image %}
+            <div class="col-md-6">
+                <h5>背面照片</h5>
+                <img src="data:image/jpeg;base64,{{ card.back_image }}" class="img-fluid" style="max-height: 400px;">
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="mt-3">
+            <a href="{{ url_for('metrocard_tickets') }}" class="btn btn-secondary">返回列表</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -4,28 +4,40 @@
 <div class="row">
     <div class="col-md-6">
         <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header bg-success text-white">
                 <h5>火车票统计</h5>
             </div>
             <div class="card-body">
                 <p>总花费: ¥{{ train_stats.total_price or 0 }}</p>
                 <p>总里程: {{ train_stats.total_distance or 0 }} 公里</p>
-                <a href="{{ url_for('train_tickets') }}" class="btn btn-primary">查看火车票</a>
+                <a href="{{ url_for('train_tickets') }}" class="btn btn-success">查看火车票</a>
             </div>
         </div>
     </div>
     <div class="col-md-6">
         <div class="card mb-4">
-            <div class="card-header bg-success text-white">
+            <div class="card-header bg-primary text-white">
                 <h5>飞机票统计</h5>
             </div>
             <div class="card-body">
                 <p>总花费: ¥{{ flight_stats.total_price or 0 }}</p>
                 <p>总里程: {{ flight_stats.total_distance or 0 }} 公里</p>
-                <a href="{{ url_for('flight_tickets') }}" class="btn btn-success">查看飞机票</a>
+                <a href="{{ url_for('flight_tickets') }}" class="btn btn-primary">查看飞机票</a>
+            </div>
+        </div>
+    </div>
+  <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header btn-warning text-black">
+                <h5>地铁票卡统计</h5>
+            </div>
+            <div class="card-body">
+                <p>总持有: {{ metrocard_count or 0 }} 张</p>
+                <a href="{{ url_for('metrocard_tickets') }}" class="btn btn-warning text-black">查看地铁票</a>
             </div>
         </div>
     </div>
    
 </div>
+
 {% endblock %}

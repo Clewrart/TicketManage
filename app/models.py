@@ -77,6 +77,18 @@ class FlightTicket(db.Model):
     remarks                 = db.Column(db.Text,     nullable=True,  comment='其他事项记录')
     ticket_image            = db.Column(db.Text,     nullable=True,  comment='票据图片(base64)')
 
+class MetroCard(db.Model):
+    __tablename__ = 'metrocard'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('usr.usrID'), nullable=False)
+    city = db.Column(db.String(50), nullable=False)
+    card_type = db.Column(db.String(50), nullable=False)
+    acquire_date = db.Column(db.Date, nullable=False)
+    acquire_method = db.Column(db.String(100), nullable=False)
+    card_number = db.Column(db.String(100))
+    edition = db.Column(db.String(100))
+    front_image = db.Column(db.Text)
+    back_image = db.Column(db.Text)
 
 def set_ticket_image(self, image_file):
         if image_file:

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+    <h2>我的轨交票卡</h2>
+    <a href="{{ url_for('add_metrocard_ticket') }}" class="btn btn-primary">添加轨交票卡</a>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>城市</th>
+            <th>票卡类型</th>
+            <th>获取日期</th>
+            <th>获取方式</th>
+            <th>卡号</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for card in cards %}
+        <tr>
+            <td>{{ card.city }}</td>
+            <td>{{ card.card_type }}</td>
+            <td>{{ card.acquire_date }}</td>
+            <td>{{ card.acquire_method }}</td>
+            <td>{{ card.card_number or '无' }}</td>
+            <td>
+                <a href="{{ url_for('view_metrocard_ticket', id=card.id) }}" class="btn btn-sm btn-info">查看</a>
+                <a href="{{ url_for('edit_metrocard_ticket', id=card.id) }}" class="btn btn-sm btn-warning">编辑</a>
+                <form action="{{ url_for('delete_metrocard_ticket', id=card.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定删除吗？')">删除</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

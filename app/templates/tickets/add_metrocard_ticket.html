@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4>添加轨交票卡</h4>
+    </div>
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="city" class="form-label">城市</label>
+                        <input type="text" class="form-control" id="city" name="city" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="card_type" class="form-label">票卡类型</label>
+                        <input type="text" class="form-control" id="card_type" name="card_type" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="acquire_date" class="form-label">获取日期</label>
+                        <input type="date" class="form-control" id="acquire_date" name="acquire_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="acquire_method" class="form-label">获取方式</label>
+                        <input type="text" class="form-control" id="acquire_method" name="acquire_method" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="card_number" class="form-label">卡号</label>
+                        <input type="text" class="form-control" id="card_number" name="card_number">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edition" class="form-label">发行时间或发行版本</label>
+                        <input type="text" class="form-control" id="edition" name="edition">
+                    </div>
+                    <div class="mb-3">
+                        <label for="front_image" class="form-label">正面照片</label>
+                        <input type="file" class="form-control" id="front_image" name="front_image" accept="image/*">
+                    </div>
+                    <div class="mb-3">
+                        <label for="back_image" class="form-label">背面照片</label>
+                        <input type="file" class="form-control" id="back_image" name="back_image" accept="image/*">
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">保存</button>
+                <a href="{{ url_for('metrocard_tickets') }}" class="btn btn-secondary">取消</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

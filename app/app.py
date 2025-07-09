@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, abort
-from app.models import db, User, TrainTicket, FlightTicket
+from app.models import db, User, TrainTicket, FlightTicket, MetroCard
 from werkzeug.security import generate_password_hash, check_password_hash
 import base64
 from datetime import datetime
@@ -80,37 +80,14 @@ def dashboard():
         db.func.sum(FlightTicket.price).label('total_price'),
         db.func.sum(FlightTicket.distance).label('total_distance')
     ).filter_by(user_id=user_id).first()
-    
-    # ### 最近5张票
-    # recent_trains = TrainTicket.query.filter_by(user_id=user_id).order_by(
-    #     TrainTicket.departure_date.desc(), 
-    #     TrainTicket.departure_time.desc()
-    # ).limit(5).all()
-    
-    # recent_flights = FlightTicket.query.filter_by(user_id=user_id).order_by(
-    #     FlightTicket.scheduled_departure_date.desc(),
-    #     FlightTicket.scheduled_departure_time.desc()
-    # ).limit(5).all()
-    
+    metrocard_count = MetroCard.query.filter_by(user_id=user_id).count()
     
     return render_template('dashboard.html',
-                         train_stats=train_stats,
-                         flight_stats=flight_stats,
-                         # recent_trains=recent_trains,
-                         # recent_flights=recent_flights
-                         )
+                           train_stats=train_stats,
+                           flight_stats=flight_stats,
+                           metrocard_count=metrocard_count
+                          )
 
-# 火车票CRUD
-# @app.route('/train-tickets')
-# def train_tickets():
-#     if 'user_id' not in session:
-#         return redirect(url_for('login'))
-    
-#     tickets = TrainTicket.query.filter_by(user_id=session['user_id']).order_by(
-#         TrainTicket.departure_date.desc(),
-#         TrainTicket.departure_time.desc()
-#     ).all()
-#     return render_template('tickets/train_tickets.html', tickets=tickets)
 @app.route('/train-tickets')
 def train_tickets():
     if 'user_id' not in session:
@@ -418,6 +395,102 @@ def delete_flight_ticket(id):
     
     return redirect(url_for('flight_tickets'))
 
+
+@app.route('/metrocard-tickets')
+def metrocard_tickets():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    cards = MetroCard.query.filter_by(user_id=session['user_id']).order_by(
+        MetroCard.acquire_date.desc()
+    ).all()
+    return render_template('tickets/metrocard_tickets.html', cards=cards)
+
+@app.route('/metrocard-tickets/add', methods=['GET', 'POST'])
+def add_metrocard_ticket():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        try:
+            card = MetroCard(
+                user_id=session['user_id'],
+                city=request.form['city'],
+                card_type=request.form['card_type'],
+                acquire_date=datetime.strptime(request.form['acquire_date'], '%Y-%m-%d').date(),
+                acquire_method=request.form['acquire_method'],
+                card_number=request.form['card_number'],
+                edition=request.form['edition'],
+                front_image=request.form['front_image'],
+                back_image=request.form['back_image']
+            )
+            db.session.add(card)
+            db.session.commit()
+            flash('票卡添加成功', 'success')
+            return redirect(url_for('metrocard_tickets'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'添加失败: {str(e)}', 'danger')
+
+    return render_template('tickets/add_metrocard_ticket.html')
+
+@app.route('/metrocard-tickets/<int:id>')
+def view_metrocard_ticket(id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    card = MetroCard.query.get_or_404(id)
+    if card.user_id != session['user_id']:
+        abort(403)
+
+    return render_template('tickets/view_metrocard_ticket.html', card=card)
+
+@app.route('/metrocard-tickets/<int:id>/edit', methods=['GET', 'POST'])
+def edit_metrocard_ticket(id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    card = MetroCard.query.get_or_404(id)
+    if card.user_id != session['user_id']:
+        abort(403)
+
+    if request.method == 'POST':
+        try:
+            card.city = request.form['city']
+            card.card_type = request.form['card_type']
+            card.acquire_date = datetime.strptime(request.form['acquire_date'], '%Y-%m-%d').date()
+            card.acquire_method = request.form['acquire_method']
+            card.card_number = request.form['card_number']
+            card.edition = request.form['edition']
+            card.front_image = request.form['front_image']
+            card.back_image = request.form['back_image']
+            db.session.commit()
+            flash('票卡更新成功', 'success')
+            return redirect(url_for('view_metrocard_ticket', id=id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'更新失败: {str(e)}', 'danger')
+
+    return render_template('tickets/edit_metrocard_ticket.html', card=card)
+
+@app.route('/metrocard-tickets/<int:id>/delete', methods=['POST'])
+def delete_metrocard_ticket(id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    card = MetroCard.query.get_or_404(id)
+    if card.user_id != session['user_id']:
+        abort(403)
+
+    try:
+        db.session.delete(card)
+        db.session.commit()
+        flash('票卡删除成功', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'删除失败: {str(e)}', 'danger')
+
+    return redirect(url_for('metrocard_tickets'))
 
 if __name__ == '__main__':
     with app.app_context():
