@@ -81,30 +81,51 @@ def dashboard():
         db.func.sum(FlightTicket.distance).label('total_distance')
     ).filter_by(user_id=user_id).first()
     
-    # 最近5张票
-    recent_trains = TrainTicket.query.filter_by(user_id=user_id).order_by(
-        TrainTicket.departure_date.desc(), 
-        TrainTicket.departure_time.desc()
-    ).limit(5).all()
+    # ### 最近5张票
+    # recent_trains = TrainTicket.query.filter_by(user_id=user_id).order_by(
+    #     TrainTicket.departure_date.desc(), 
+    #     TrainTicket.departure_time.desc()
+    # ).limit(5).all()
     
-    recent_flights = FlightTicket.query.filter_by(user_id=user_id).order_by(
-        FlightTicket.scheduled_departure_date.desc(),
-        FlightTicket.scheduled_departure_time.desc()
-    ).limit(5).all()
+    # recent_flights = FlightTicket.query.filter_by(user_id=user_id).order_by(
+    #     FlightTicket.scheduled_departure_date.desc(),
+    #     FlightTicket.scheduled_departure_time.desc()
+    # ).limit(5).all()
+    
     
     return render_template('dashboard.html',
                          train_stats=train_stats,
                          flight_stats=flight_stats,
-                         recent_trains=recent_trains,
-                         recent_flights=recent_flights)
+                         # recent_trains=recent_trains,
+                         # recent_flights=recent_flights
+                         )
 
 # 火车票CRUD
+# @app.route('/train-tickets')
+# def train_tickets():
+#     if 'user_id' not in session:
+#         return redirect(url_for('login'))
+    
+#     tickets = TrainTicket.query.filter_by(user_id=session['user_id']).order_by(
+#         TrainTicket.departure_date.desc(),
+#         TrainTicket.departure_time.desc()
+#     ).all()
+#     return render_template('tickets/train_tickets.html', tickets=tickets)
 @app.route('/train-tickets')
 def train_tickets():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
-    tickets = TrainTicket.query.filter_by(user_id=session['user_id']).order_by(
+    # 只选择需要的字段，排除 ticket_photo
+    tickets = db.session.query(
+        TrainTicket.TrainRecordID,
+        TrainTicket.train_number,
+        TrainTicket.departure_date,
+        TrainTicket.departure_time,
+        TrainTicket.arrival_station,
+        TrainTicket.departure_station,
+        TrainTicket.price
+    ).filter_by(user_id=session['user_id']).order_by(
         TrainTicket.departure_date.desc(),
         TrainTicket.departure_time.desc()
     ).all()
@@ -225,12 +246,37 @@ def delete_train_ticket(id):
     return redirect(url_for('train_tickets'))
 
 # 飞机票CRUD (与火车票类似)
+# @app.route('/flight-tickets')
+# def flight_tickets():
+#     if 'user_id' not in session:
+#         return redirect(url_for('login'))
+    
+#     tickets = FlightTicket.query.filter_by(user_id=session['user_id']).order_by(
+#         FlightTicket.scheduled_departure_date.desc(),
+#         FlightTicket.scheduled_departure_time.desc()
+#     ).all()
+#     return render_template('tickets/flight_tickets.html', tickets=tickets)
+
 @app.route('/flight-tickets')
 def flight_tickets():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
-    tickets = FlightTicket.query.filter_by(user_id=session['user_id']).order_by(
+    # 只选择需要的字段，排除 ticket_image
+    tickets = db.session.query(
+        FlightTicket.flightRecordID,
+        FlightTicket.flight_number,
+        FlightTicket.scheduled_departure_date,
+        FlightTicket.scheduled_departure_time,
+        FlightTicket.departure_airport,
+        FlightTicket.departure_airport_code,
+        FlightTicket.arrival_airport,
+        FlightTicket.arrival_airport_code,
+        FlightTicket.airline,
+        FlightTicket.airline_code,
+
+        FlightTicket.price
+    ).filter_by(user_id=session['user_id']).order_by(
         FlightTicket.scheduled_departure_date.desc(),
         FlightTicket.scheduled_departure_time.desc()
     ).all()
@@ -371,6 +417,7 @@ def delete_flight_ticket(id):
         flash(f'删除失败: {str(e)}', 'danger')
     
     return redirect(url_for('flight_tickets'))
+
 
 if __name__ == '__main__':
     with app.app_context():

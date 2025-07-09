@@ -77,6 +77,7 @@ class FlightTicket(db.Model):
     remarks                 = db.Column(db.Text,     nullable=True,  comment='其他事项记录')
     ticket_image            = db.Column(db.Text,     nullable=True,  comment='票据图片(base64)')
 
+
 def set_ticket_image(self, image_file):
         if image_file:
             self.ticket_image = base64.b64encode(image_file.read()).decode('utf-8')
