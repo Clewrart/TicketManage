@@ -3,13 +3,24 @@ from app.models import db, User, TrainTicket, FlightTicket, MetroCard
 from werkzeug.security import generate_password_hash, check_password_hash
 import base64
 from datetime import datetime
+import random
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://ticgsy:ticGSY123@47.96.10.165:3306/ticket'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://<>><</ticket'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'your-secret-key-here'
+app.config['SECRET_KEY'] = 'os.urandom(24).hex()'
+
+
+@app.context_processor
+def utility_processor():
+    return {
+        'random': random.random,
+        'now': datetime.now  # 如果需要也可以添加其他实用函数
+    }
+
 
 db.init_app(app)
+
 
 # 用户认证相关路由
 @app.route('/')
@@ -18,26 +29,28 @@ def home():
         return redirect(url_for('dashboard'))
     return redirect(url_for('login'))
 
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         phone = request.form['phone']
         password = request.form['password']
         username = request.form['username']
-        
+
         if User.query.filter_by(Phone=phone).first():
             flash('手机号已注册', 'danger')
             return redirect(url_for('register'))
-        
+
         user = User(Phone=phone, UsrName=username)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
-        
+
         flash('注册成功，请登录', 'success')
         return redirect(url_for('login'))
-    
+
     return render_template('auth/register.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -45,16 +58,17 @@ def login():
         phone = request.form['phone']
         password = request.form['password']
         user = User.query.filter_by(Phone=phone).first()
-        
+
         if user and user.check_password(password):
             session['user_id'] = user.usrID
             session['username'] = user.UsrName
             flash('登录成功', 'success')
             return redirect(url_for('dashboard'))
-        
+
         flash('手机号或密码错误', 'danger')
-    
+
     return render_template('auth/login.html')
+
 
 @app.route('/logout')
 def logout():
@@ -62,37 +76,41 @@ def logout():
     flash('您已退出登录', 'info')
     return redirect(url_for('login'))
 
+
 # 仪表盘
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    
+
     user_id = session['user_id']
-    
+
     # 统计信息
     train_stats = db.session.query(
         db.func.sum(TrainTicket.price).label('total_price'),
         db.func.sum(TrainTicket.distance).label('total_distance')
     ).filter_by(user_id=user_id).first()
-    
+
     flight_stats = db.session.query(
         db.func.sum(FlightTicket.price).label('total_price'),
         db.func.sum(FlightTicket.distance).label('total_distance')
     ).filter_by(user_id=user_id).first()
-    metrocard_count = MetroCard.query.filter_by(user_id=user_id).count()
-    
+
+    # 只查询主键（索引列），减少数据加载
+    metrocard_count = MetroCard.query.with_entities(MetroCard.id).filter_by(user_id=user_id).count()
+
     return render_template('dashboard.html',
                            train_stats=train_stats,
                            flight_stats=flight_stats,
                            metrocard_count=metrocard_count
-                          )
+                           )
+
 
 @app.route('/train-tickets')
 def train_tickets():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    
+
     # 只选择需要的字段，排除 ticket_photo
     tickets = db.session.query(
         TrainTicket.TrainRecordID,
@@ -108,11 +126,12 @@ def train_tickets():
     ).all()
     return render_template('tickets/train_tickets.html', tickets=tickets)
 
+
 @app.route('/train-tickets/add', methods=['GET', 'POST'])
 def add_train_ticket():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    
+
     if request.method == 'POST':
         try:
             ticket = TrainTicket(
@@ -132,7 +151,7 @@ def add_train_ticket():
                 train_model=request.form['train_model'],
                 train_code=request.form['train_code']
             )
-            
+
             # 处理图片上传并转为 Base64
             if 'ticket_photo' in request.files:
                 photo_file = request.files['ticket_photo']
@@ -141,7 +160,7 @@ def add_train_ticket():
                     photo_data = photo_file.read()
                     base64_photo = base64.b64encode(photo_data).decode('utf-8')
                     ticket.ticket_photo = base64_photo
-            
+
             db.session.add(ticket)
             db.session.commit()
             flash('火车票添加成功', 'success')
@@ -149,29 +168,31 @@ def add_train_ticket():
         except Exception as e:
             db.session.rollback()
             flash(f'添加失败: {str(e)}', 'danger')
-    
+
     return render_template('tickets/add_train_ticket.html')
+
 
 @app.route('/train-tickets/<int:id>')
 def view_train_ticket(id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    
+
     ticket = TrainTicket.query.get_or_404(id)
     if ticket.user_id != session['user_id']:
         abort(403)
-    
+
     return render_template('tickets/view_train_ticket.html', ticket=ticket)
+
 
 @app.route('/train-tickets/<int:id>/edit', methods=['GET', 'POST'])
 def edit_train_ticket(id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    
+
     ticket = TrainTicket.query.get_or_404(id)
     if ticket.user_id != session['user_id']:
         abort(403)
-    
+
     if request.method == 'POST':
         try:
             ticket.train_number = request.form['train_number']
@@ -190,28 +211,33 @@ def edit_train_ticket(id):
             ticket.railwaycom = request.form['railwaycom']
             ticket.train_model = request.form['train_model']
             ticket.train_code = request.form['train_code']
-            
+
             if 'ticket_photo' in request.files and request.files['ticket_photo'].filename != '':
-                ticket.set_ticket_photo(request.files['ticket_photo'])
-            
+                photo_file = request.files['ticket_photo']
+                photo_data = photo_file.read()
+                base64_photo = base64.b64encode(photo_data).decode('utf-8')
+                ticket.ticket_photo = base64_photo  # 直接赋值，不是方法调用
+
             db.session.commit()
             flash('火车票更新成功', 'success')
             return redirect(url_for('view_train_ticket', id=id))
+
         except Exception as e:
             db.session.rollback()
             flash(f'更新失败: {str(e)}', 'danger')
-    
+
     return render_template('tickets/edit_train_ticket.html', ticket=ticket)
+
 
 @app.route('/train-tickets/<int:id>/delete', methods=['POST'])
 def delete_train_ticket(id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    
+
     ticket = TrainTicket.query.get_or_404(id)
     if ticket.user_id != session['user_id']:
         abort(403)
-    
+
     try:
         db.session.delete(ticket)
         db.session.commit()
@@ -219,15 +245,16 @@ def delete_train_ticket(id):
     except Exception as e:
         db.session.rollback()
         flash(f'删除失败: {str(e)}', 'danger')
-    
+
     return redirect(url_for('train_tickets'))
+
 
 # 飞机票CRUD (与火车票类似)
 # @app.route('/flight-tickets')
 # def flight_tickets():
 #     if 'user_id' not in session:
 #         return redirect(url_for('login'))
-    
+
 #     tickets = FlightTicket.query.filter_by(user_id=session['user_id']).order_by(
 #         FlightTicket.scheduled_departure_date.desc(),
 #         FlightTicket.scheduled_departure_time.desc()
@@ -238,7 +265,7 @@ def delete_train_ticket(id):
 def flight_tickets():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    
+
     # 只选择需要的字段，排除 ticket_image
     tickets = db.session.query(
         FlightTicket.flightRecordID,
@@ -259,11 +286,12 @@ def flight_tickets():
     ).all()
     return render_template('tickets/flight_tickets.html', tickets=tickets)
 
+
 @app.route('/flight-tickets/add', methods=['GET', 'POST'])
 def add_flight_ticket():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    
+
     if request.method == 'POST':
         try:
             ticket = FlightTicket(
@@ -295,7 +323,7 @@ def add_flight_ticket():
                 remarks=request.form['remarks'],
                 distance=float(request.form['distance']) if request.form['distance'] else None
             )
-            
+
             # 处理图片上传并转为 Base64
             if 'ticket_image' in request.files:
                 photo_file = request.files['ticket_image']
@@ -304,7 +332,7 @@ def add_flight_ticket():
                     photo_data = photo_file.read()
                     base64_photo = base64.b64encode(photo_data).decode('utf-8')
                     ticket.ticket_image = base64_photo
-            
+
             db.session.add(ticket)
             db.session.commit()
             flash('机票添加成功', 'success')
@@ -312,29 +340,31 @@ def add_flight_ticket():
         except Exception as e:
             db.session.rollback()
             flash(f'添加失败: {str(e)}', 'danger')
-    
+
     return render_template('tickets/add_flight_ticket.html')
+
 
 @app.route('/flight-tickets/<int:id>')
 def view_flight_ticket(id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    
+
     ticket = FlightTicket.query.get_or_404(id)
     if ticket.user_id != session['user_id']:
         abort(403)
-    
+
     return render_template('tickets/view_flight_ticket.html', ticket=ticket)
+
 
 @app.route('/flight-tickets/<int:id>/edit', methods=['GET', 'POST'])
 def edit_flight_ticket(id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    
+
     ticket = FlightTicket.query.get_or_404(id)
     if ticket.user_id != session['user_id']:
         abort(403)
-    
+
     if request.method == 'POST':
         try:
             ticket.flight_number = request.form['flight_number']
@@ -349,8 +379,10 @@ def edit_flight_ticket(id):
             ticket.boarding_gate = request.form['boarding_gate']
             ticket.arrival_airport = request.form['arrival_airport']
             ticket.arrival_airport_code = request.form['arrival_airport_code']
-            ticket.scheduled_departure_date = datetime.strptime(request.form['scheduled_departure_date'], '%Y-%m-%d').date()
-            ticket.scheduled_departure_time = datetime.strptime(request.form['scheduled_departure_time'], '%H:%M').time()
+            ticket.scheduled_departure_date = datetime.strptime(request.form['scheduled_departure_date'],
+                                                                '%Y-%m-%d').date()
+            ticket.scheduled_departure_time = datetime.strptime(request.form['scheduled_departure_time'],
+                                                                '%H:%M').time()
             ticket.scheduled_arrival_date = datetime.strptime(request.form['scheduled_arrival_date'], '%Y-%m-%d').date()
             ticket.scheduled_arrival_time = datetime.strptime(request.form['scheduled_arrival_time'], '%H:%M').time()
             ticket.departure_delay = request.form['departure_delay']
@@ -363,28 +395,30 @@ def edit_flight_ticket(id):
             ticket.etkt_number = request.form['etkt_number']
             ticket.remarks = request.form['remarks']
             ticket.distance = float(request.form['distance']) if request.form['distance'] else None
-            
-            if 'ticket_image' in request.files and request.files['ticket_image'].filename != '':
-                ticket.set_ticket_image(request.files['ticket_image'])
-            
+
+            photo_file = request.files['ticket_image']
+            if photo_file and photo_file.filename != '':
+                ticket.ticket_image = base64.b64encode(photo_file.read()).decode('utf-8')
+
             db.session.commit()
             flash('飞机票更新成功', 'success')
             return redirect(url_for('view_flight_ticket', id=id))
         except Exception as e:
             db.session.rollback()
             flash(f'更新失败: {str(e)}', 'danger')
-    
+
     return render_template('tickets/edit_flight_ticket.html', ticket=ticket)
+
 
 @app.route('/flight-tickets/<int:id>/delete', methods=['POST'])
 def delete_flight_ticket(id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    
+
     ticket = FlightTicket.query.get_or_404(id)
     if ticket.user_id != session['user_id']:
         abort(403)
-    
+
     try:
         db.session.delete(ticket)
         db.session.commit()
@@ -392,7 +426,7 @@ def delete_flight_ticket(id):
     except Exception as e:
         db.session.rollback()
         flash(f'删除失败: {str(e)}', 'danger')
-    
+
     return redirect(url_for('flight_tickets'))
 
 
@@ -401,10 +435,19 @@ def metrocard_tickets():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    cards = MetroCard.query.filter_by(user_id=session['user_id']).order_by(
+    cards = db.session.query(
+        MetroCard.id,
+        MetroCard.city,
+        MetroCard.card_type,
+        MetroCard.acquire_date,
+        MetroCard.acquire_method,
+        MetroCard.card_number
+    ).filter_by(user_id=session['user_id']).order_by(
         MetroCard.acquire_date.desc()
     ).all()
+
     return render_template('tickets/metrocard_tickets.html', cards=cards)
+
 
 @app.route('/metrocard-tickets/add', methods=['GET', 'POST'])
 def add_metrocard_ticket():
@@ -439,7 +482,7 @@ def add_metrocard_ticket():
                 card_number=request.form.get('card_number', ''),  # 使用 get 避免 KeyError
                 edition=request.form.get('edition', ''),
                 front_image=front_image_base64,  # 存储 Base64 字符串
-                back_image=back_image_base64     # 存储 Base64 字符串
+                back_image=back_image_base64  # 存储 Base64 字符串
             )
 
             db.session.add(card)
@@ -452,6 +495,7 @@ def add_metrocard_ticket():
 
     return render_template('tickets/add_metrocard_ticket.html')
 
+
 @app.route('/metrocard-tickets/<int:id>')
 def view_metrocard_ticket(id):
     if 'user_id' not in session:
@@ -462,6 +506,7 @@ def view_metrocard_ticket(id):
         abort(403)
 
     return render_template('tickets/view_metrocard_ticket.html', card=card)
+
 
 @app.route('/metrocard-tickets/<int:id>/edit', methods=['GET', 'POST'])
 def edit_metrocard_ticket(id):
@@ -503,6 +548,7 @@ def edit_metrocard_ticket(id):
 
     return render_template('tickets/edit_metrocard_ticket.html', card=card)
 
+
 @app.route('/metrocard-tickets/<int:id>/delete', methods=['POST'])
 def delete_metrocard_ticket(id):
     if 'user_id' not in session:
@@ -522,7 +568,8 @@ def delete_metrocard_ticket(id):
 
     return redirect(url_for('metrocard_tickets'))
 
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run()
